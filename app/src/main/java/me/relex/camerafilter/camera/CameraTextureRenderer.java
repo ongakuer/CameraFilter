@@ -1,16 +1,16 @@
 package me.relex.camerafilter.camera;
 
 import android.graphics.SurfaceTexture;
-import android.opengl.GLSurfaceView;
+import com.eaglesakura.view.GLTextureView;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import me.relex.camerafilter.gles.FullFrameRect;
 import me.relex.camerafilter.gles.Texture2dProgram;
-import me.relex.camerafilter.widget.CameraSurfaceView;
+import me.relex.camerafilter.widget.CameraTextureView;
 
-public class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
+public class CameraTextureRenderer implements GLTextureView.Renderer {
 
-    private final CameraSurfaceView.CameraHandler mCameraHandler;
+    private final CameraTextureView.CameraHandler mCameraHandler;
     private int mTextureId = -1;
     private FullFrameRect mFullScreen;
     private SurfaceTexture mSurfaceTexture;
@@ -20,7 +20,7 @@ public class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
     private int mIncomingWidth, mIncomingHeight;
     private int mSurfaceWidth, mSurfaceHeight;
 
-    public CameraSurfaceRenderer(CameraSurfaceView.CameraHandler cameraHandler) {
+    public CameraTextureRenderer(CameraTextureView.CameraHandler cameraHandler) {
         mCameraHandler = cameraHandler;
         mIncomingSizeUpdated = false;
         mIncomingWidth = mIncomingHeight = -1;
@@ -53,10 +53,12 @@ public class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
         mSurfaceWidth = width;
         mSurfaceHeight = height;
 
-        gl.glViewport(0, 0, width, height);
+        if (gl != null) {
+            gl.glViewport(0, 0, width, height);
+        }
 
         mCameraHandler.sendMessage(
-                mCameraHandler.obtainMessage(CameraSurfaceView.CameraHandler.SETUP_CAMERA, width,
+                mCameraHandler.obtainMessage(CameraTextureView.CameraHandler.SETUP_CAMERA, width,
                         height, mSurfaceTexture));
     }
 
@@ -71,6 +73,10 @@ public class CameraSurfaceRenderer implements GLSurfaceView.Renderer {
 
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
+    }
+
+    @Override public void onSurfaceDestroyed(GL10 gl) {
+        notifyPausing();
     }
 
     public void notifyPausing() {
