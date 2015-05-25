@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CameraFilter.iml" filepath="$PROJECT_DIR$/CameraFilter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GLTextureView/GLTextureView.iml" filepath="$PROJECT_DIR$/GLTextureView/GLTextureView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

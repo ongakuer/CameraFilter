@@ -50,7 +50,6 @@ public class CameraTextureView extends GLTextureView
         mCameraSurfaceRenderer = new CameraTextureRenderer(mBackgroundHandler);
 
         setRenderer(mCameraSurfaceRenderer);
-        //setRenderMode(RENDERMODE_CONTINUOUSLY);
     }
 
     public void setAspectRatio(int width, int height) {
