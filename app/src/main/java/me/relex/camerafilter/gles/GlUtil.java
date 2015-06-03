@@ -17,13 +17,19 @@ package me.relex.camerafilter.gles;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.RawRes;
 import android.util.Log;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -32,17 +38,20 @@ public class GlUtil {
     private static final String TAG = "GlUtil";
     /** Identity matrix for general use.  Don't modify or life will get weird. */
 
-
     private static final int SIZEOF_FLOAT = 4;
 
-    private GlUtil() {
-    }     // do not instantiate
+    private GlUtil() { // do not instantiate
+    }
 
-    /**
-     * Creates a new program from the supplied vertex and fragment shaders.
-     *
-     * @return A handle to the program, or 0 on failure.
-     */
+    public static int createProgram(Context applicationContext, @RawRes int vertexSourceRawId,
+            @RawRes int fragmentSourceRawId) {
+
+        String vertexSource = readTextFromRawResource(applicationContext, vertexSourceRawId);
+        String fragmentSource = readTextFromRawResource(applicationContext, fragmentSourceRawId);
+
+        return createProgram(vertexSource, fragmentSource);
+    }
+
     public static int createProgram(String vertexSource, String fragmentSource) {
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
         if (vertexShader == 0) {
@@ -52,7 +61,6 @@ public class GlUtil {
         if (pixelShader == 0) {
             return 0;
         }
-
         int program = GLES20.glCreateProgram();
         checkGlError("glCreateProgram");
         if (program == 0) {
@@ -74,11 +82,6 @@ public class GlUtil {
         return program;
     }
 
-    /**
-     * Compiles the provided shader source.
-     *
-     * @return A handle to the shader, or 0 on failure.
-     */
     public static int loadShader(int shaderType, String source) {
         int shader = GLES20.glCreateShader(shaderType);
         checkGlError("glCreateShader type=" + shaderType);
@@ -93,6 +96,36 @@ public class GlUtil {
             shader = 0;
         }
         return shader;
+    }
+
+    /**
+     * @param textureTarget Texture类型。
+     * 1. 相机用 GLES11Ext.GL_TEXTURE_EXTERNAL_OES
+     * 2. 图片用GLES20.GL_TEXTURE_2D
+     * @param minFilter 缩小过滤类型 (1.GL_NEAREST ; 2.GL_LINEAR)
+     * @param magFilter 放大过滤类型
+     * @param wrapS X方向边缘环绕
+     * @param wrapT Y方向边缘环绕
+     * @return 返回创建的 Texture ID
+     */
+    public static int createTexture(int textureTarget, int minFilter, int magFilter, int wrapS,
+            int wrapT) {
+        int[] textureHandle = new int[1];
+        GLES20.glGenTextures(1, textureHandle, 0);
+        GlUtil.checkGlError("glGenTextures");
+        GLES20.glBindTexture(textureTarget, textureHandle[0]);
+        GlUtil.checkGlError("glBindTexture " + textureHandle[0]);
+        GLES20.glTexParameterf(textureTarget, GLES20.GL_TEXTURE_MIN_FILTER, minFilter);
+        GLES20.glTexParameterf(textureTarget, GLES20.GL_TEXTURE_MAG_FILTER, magFilter); //线性插值
+        GLES20.glTexParameteri(textureTarget, GLES20.GL_TEXTURE_WRAP_S, wrapS);
+        GLES20.glTexParameteri(textureTarget, GLES20.GL_TEXTURE_WRAP_T, wrapT);
+        GlUtil.checkGlError("glTexParameter");
+        return textureHandle[0];
+    }
+
+    public static int createTexture(int textureTarget) {
+        return createTexture(textureTarget, GLES20.GL_LINEAR, GLES20.GL_LINEAR,
+                GLES20.GL_CLAMP_TO_EDGE, GLES20.GL_CLAMP_TO_EDGE);
     }
 
     /**
@@ -130,6 +163,25 @@ public class GlUtil {
         fb.put(coords);
         fb.position(0);
         return fb;
+    }
+
+    public static String readTextFromRawResource(final Context applicationContext,
+            @RawRes final int resourceId) {
+        final InputStream inputStream = applicationContext.getResources().openRawResource(resourceId);
+        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        String nextLine;
+        final StringBuilder body = new StringBuilder();
+        try {
+            while ((nextLine = bufferedReader.readLine()) != null) {
+                body.append(nextLine);
+                body.append('\n');
+            }
+        } catch (IOException e) {
+            return null;
+        }
+
+        return body.toString();
     }
 
     /**
@@ -177,6 +229,7 @@ public class GlUtil {
 
         //Generate one texture pointer...
         GLES20.glGenTextures(1, textures, 0);
+
         //...and bind it to our array
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
 
@@ -202,41 +255,36 @@ public class GlUtil {
         return textures[0];
     }
 
-    public static int createTextureFromImage(Context context, int resId) {
-        // Create an empty, mutable bitmap
-        Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
-        // get a canvas to paint over the bitmap
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawARGB(0, 0, 255, 0);
+    public static int createTextureFromImage(Context context, @DrawableRes int resId) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;    // No pre-scaling
+        // Read in the resource
 
-        // get a background image from resources
-        // note the image format must match the bitmap format
-        Drawable background = context.getResources().getDrawable(resId);
-        background.setBounds(0, 0, 256, 256);
-        background.draw(canvas); // draw the background to our bitmap
+        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resId, options);
 
-        int[] textures = new int[1];
-
-        //Generate one texture pointer...
-        GLES20.glGenTextures(1, textures, 0);
-        //...and bind it to our array
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
-
-        //Create Nearest Filtered Texture
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+        final int[] textureHandle = new int[1];
+        ////Generate one texture pointer...
+        GLES20.glGenTextures(1, textureHandle, 0);
+        // Bind to the texture in OpenGL
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+        GlUtil.checkGlError("glBindTexture " + textureHandle[0]);
+        // Set filtering
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
                 GLES20.GL_NEAREST);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
                 GLES20.GL_LINEAR);
+        ////Different possible texture parameters, e.g. GLES20.GL_CLAMP_TO_EDGE
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                GLES20.GL_CLAMP_TO_EDGE);
 
-        //Different possible texture parameters, e.g. GLES20.GL_CLAMP_TO_EDGE
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-
-        //Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-        //Clean up
-        bitmap.recycle();
 
-        return textures[0];
+        if (textureHandle[0] == 0) {
+            throw new RuntimeException("Error loading texture.");
+        }
+
+        return textureHandle[0];
     }
 }

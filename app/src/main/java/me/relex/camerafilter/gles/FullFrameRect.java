@@ -40,8 +40,7 @@ import android.opengl.Matrix;
  */
 public class FullFrameRect {
     private final Drawable2d mRectDrawable = new Drawable2d(Drawable2d.Prefab.FULL_RECTANGLE);
-    private Texture2dProgram mProgram;
-
+    private IFilter mFilter;
     public final float[] IDENTITY_MATRIX = new float[16];
 
     /**
@@ -50,8 +49,8 @@ public class FullFrameRect {
      * @param program The program to use.  FullFrameRect takes ownership, and will release
      * the program when no longer needed.
      */
-    public FullFrameRect(Texture2dProgram program) {
-        mProgram = program;
+    public FullFrameRect(IFilter program) {
+        mFilter = program;
         Matrix.setIdentityM(IDENTITY_MATRIX, 0);
     }
 
@@ -64,19 +63,19 @@ public class FullFrameRect {
      * can pass a flag that will tell this function to skip any EGL-context-specific cleanup.
      */
     public void release(boolean doEglCleanup) {
-        if (mProgram != null) {
+        if (mFilter != null) {
             if (doEglCleanup) {
-                mProgram.release();
+                mFilter.releaseProgram();
             }
-            mProgram = null;
+            mFilter = null;
         }
     }
 
     /**
      * Returns the program currently in use.
      */
-    public Texture2dProgram getProgram() {
-        return mProgram;
+    public IFilter getFilter() {
+        return mFilter;
     }
 
     /**
@@ -84,19 +83,19 @@ public class FullFrameRect {
      * <p>
      * The appropriate EGL context must be current.
      */
-    public void changeProgram(Texture2dProgram program) {
-        mProgram.release();
-        mProgram = program;
+    public void changeProgram(IFilter newFilter) {
+        mFilter.releaseProgram();
+        mFilter = newFilter;
     }
 
     /**
      * Creates a texture object suitable for use with drawFrame().
      */
-    public int createTextureObject() {
-        return mProgram.createTextureObject();
+    public int createTexture() {
+        return GlUtil.createTexture(mFilter.getTextureTarget());
     }
 
-    public void scaleMatrix(float x, float y) {
+    public void scaleMVPMatrix(float x, float y) {
         Matrix.setIdentityM(IDENTITY_MATRIX, 0);
         Matrix.scaleM(IDENTITY_MATRIX, 0, x, y, 1f);
     }
@@ -104,10 +103,11 @@ public class FullFrameRect {
     /**
      * Draws a viewport-filling rect, texturing it with the specified texture object.
      */
+
     public void drawFrame(int textureId, float[] texMatrix) {
 
         // Use the identity matrix for MVP so our 2x2 FULL_RECTANGLE covers the viewport.
-        mProgram.draw(IDENTITY_MATRIX, mRectDrawable.getVertexArray(), 0,
+        mFilter.onDraw(IDENTITY_MATRIX, mRectDrawable.getVertexArray(), 0,
                 mRectDrawable.getVertexCount(), mRectDrawable.getCoordsPerVertex(),
                 mRectDrawable.getVertexStride(), texMatrix, mRectDrawable.getTexCoordArray(),
                 textureId, mRectDrawable.getTexCoordStride());

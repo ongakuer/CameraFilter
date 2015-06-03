@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CameraFilter</string>
+    <string name="record_start">开始录制</string>
+    <string name="record_stop">停止录制</string>
 </resources>

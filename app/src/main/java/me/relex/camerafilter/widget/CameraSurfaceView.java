@@ -10,15 +10,16 @@ import android.os.Message;
 import android.util.AttributeSet;
 import me.relex.camerafilter.camera.CameraController;
 import me.relex.camerafilter.camera.CameraHelper;
-import me.relex.camerafilter.camera.CameraSurfaceRenderer;
+import me.relex.camerafilter.camera.CameraRecordRenderer;
 import me.relex.camerafilter.camera.CommonHandlerListener;
+import me.relex.camerafilter.filter.FilterManager.FilterType;
 
 public class CameraSurfaceView extends AutoFitGLSurfaceView
         implements CommonHandlerListener, SurfaceTexture.OnFrameAvailableListener {
 
     private CameraHandler mBackgroundHandler;
     private HandlerThread mHandlerThread;
-    private CameraSurfaceRenderer mCameraSurfaceRenderer;
+    private CameraRecordRenderer mCameraRenderer;
 
     public CameraSurfaceView(Context context) {
         super(context);
@@ -38,11 +39,22 @@ public class CameraSurfaceView extends AutoFitGLSurfaceView
         mHandlerThread.start();
 
         mBackgroundHandler = new CameraHandler(mHandlerThread.getLooper(), this);
-        mCameraSurfaceRenderer = new CameraSurfaceRenderer(mBackgroundHandler);
+        mCameraRenderer =
+                new CameraRecordRenderer(context.getApplicationContext(), mBackgroundHandler);
 
-        setRenderer(mCameraSurfaceRenderer);
-        setRenderMode(RENDERMODE_CONTINUOUSLY);
+        setRenderer(mCameraRenderer);
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
+
+    public CameraRecordRenderer getRenderer() {
+        return mCameraRenderer;
+    }
+
+    //public void setEncoderConfig(EncoderConfig encoderConfig) {
+    //    if (mCameraRenderer != null) {
+    //        mCameraRenderer.setEncoderConfig(encoderConfig);
+    //    }
+    //}
 
     @Override public void onResume() {
         super.onResume();
@@ -54,7 +66,7 @@ public class CameraSurfaceView extends AutoFitGLSurfaceView
         queueEvent(new Runnable() {
             @Override public void run() {
                 // 跨进程 清空 Renderer数据
-                mCameraSurfaceRenderer.notifyPausing();
+                mCameraRenderer.notifyPausing();
             }
         });
 
@@ -62,6 +74,7 @@ public class CameraSurfaceView extends AutoFitGLSurfaceView
     }
 
     public void onDestroy() {
+        mBackgroundHandler.removeCallbacksAndMessages(null);
         if (!mHandlerThread.isInterrupted()) {
             try {
                 mHandlerThread.quit();
@@ -70,6 +83,10 @@ public class CameraSurfaceView extends AutoFitGLSurfaceView
                 e.printStackTrace();
             }
         }
+    }
+
+    public void changeFilter(FilterType filterType) {
+        mCameraRenderer.changeFilter(filterType);
     }
 
     @Override public void onFrameAvailable(SurfaceTexture surfaceTexture) {
@@ -121,8 +138,7 @@ public class CameraSurfaceView extends AutoFitGLSurfaceView
 
                 CameraController.getInstance().configureCameraParameters(previewSize);
                 if (previewSize != null) {
-                    mCameraSurfaceRenderer.setCameraPreviewSize(previewSize.height,
-                            previewSize.width);
+                    mCameraRenderer.setCameraPreviewSize(previewSize.height, previewSize.width);
                 }
                 mBackgroundHandler.sendEmptyMessage(CameraHandler.START_CAMERA_PREVIEW);
             }
