@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.relex.camerafilter.gles;
+package me.relex.camerafilter.video;
 
 import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;

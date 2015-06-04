@@ -6,7 +6,6 @@ import android.opengl.GLES20;
 import java.nio.FloatBuffer;
 import me.relex.camerafilter.R;
 import me.relex.camerafilter.gles.GlUtil;
-import me.relex.camerafilter.gles.IFilter;
 
 public class CameraFilter extends AbstractFilter implements IFilter {
 

@@ -10,6 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 import me.relex.camerafilter.filter.FilterManager;
 import me.relex.camerafilter.filter.FilterManager.FilterType;
 import me.relex.camerafilter.gles.FullFrameRect;
+import me.relex.camerafilter.gles.GlUtil;
 import me.relex.camerafilter.video.EncoderConfig;
 import me.relex.camerafilter.video.TextureMovieEncoder;
 import me.relex.camerafilter.widget.CameraSurfaceView;
@@ -22,7 +23,7 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
 
     private final Context mApplicationContext;
     private final CameraSurfaceView.CameraHandler mCameraHandler;
-    private int mTextureId = -1;
+    private int mTextureId = GlUtil.NO_TEXTURE;
     private FullFrameRect mFullScreen;
     private SurfaceTexture mSurfaceTexture;
     private final float[] mSTMatrix = new float[16];
@@ -75,8 +76,8 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
             mRecordingStatus = RECORDING_OFF;
             mVideoEncoder.initFilter(mCurrentFilterType);
         }
-        mFullScreen =
-                new FullFrameRect(FilterManager.getFilter(mCurrentFilterType, mApplicationContext));
+        mFullScreen = new FullFrameRect(
+                FilterManager.getCameraFilter(mCurrentFilterType, mApplicationContext));
         mTextureId = mFullScreen.createTexture();
         mSurfaceTexture = new SurfaceTexture(mTextureId);
     }
@@ -96,7 +97,8 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
         mSurfaceTexture.updateTexImage();
 
         if (mNewFilterType != mCurrentFilterType) {
-            mFullScreen.changeProgram(FilterManager.getFilter(mNewFilterType, mApplicationContext));
+            mFullScreen.changeProgram(
+                    FilterManager.getCameraFilter(mNewFilterType, mApplicationContext));
             mCurrentFilterType = mNewFilterType;
         }
         mSurfaceTexture.getTransformMatrix(mSTMatrix);

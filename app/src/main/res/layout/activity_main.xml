@@ -1,54 +1,24 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
 
+    <android.support.v7.widget.AppCompatButton
 
-    <me.relex.camerafilter.widget.CameraSurfaceView
-        android:id="@+id/camera"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:id="@+id/image_filter"
+        android:text="@string/image_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
+    <android.support.v4.widget.Space
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/activity_vertical_margin"/>
 
-    <LinearLayout
-        android:layout_alignParentBottom="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/video_record"
+        android:text="@string/video_record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/filter_normal"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:text="普通"
-            android:gravity="center"/>
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/filter_blend"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:text="叠加"
-            android:gravity="center"/>
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/filter_soft_light"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:text="柔和"
-            android:gravity="center"/>
-
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/record"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:text="@string/record_start"
-            android:gravity="center"/>
-
-
-    </LinearLayout>
-
-</RelativeLayout>
+</LinearLayout>

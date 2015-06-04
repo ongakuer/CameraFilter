@@ -1,6 +1,8 @@
 package me.relex.camerafilter.filter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.support.annotation.DrawableRes;
 import java.nio.FloatBuffer;
@@ -15,8 +17,11 @@ public class CameraFilterBlend extends CameraFilter {
 
     public CameraFilterBlend(Context context, @DrawableRes int drawableId) {
         super(context);
-
-        mExtraTextureId = GlUtil.createTextureFromImage(context, drawableId);
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;    // No pre-scaling
+        final Bitmap bitmap =
+                BitmapFactory.decodeResource(context.getResources(), drawableId, options);
+        mExtraTextureId = GlUtil.createTexture(GLES20.GL_TEXTURE_2D, bitmap);
     }
 
     @Override protected int createProgram(Context applicationContext) {

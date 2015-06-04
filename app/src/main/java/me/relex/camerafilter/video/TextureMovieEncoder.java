@@ -28,9 +28,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import me.relex.camerafilter.filter.FilterManager;
 import me.relex.camerafilter.filter.FilterManager.FilterType;
-import me.relex.camerafilter.gles.EglCore;
 import me.relex.camerafilter.gles.FullFrameRect;
-import me.relex.camerafilter.gles.WindowSurface;
 
 /**
  * Encode a movie from frames rendered from an external texture image.
@@ -385,7 +383,7 @@ public class TextureMovieEncoder implements Runnable {
         mInputWindowSurface.makeCurrent();
 
         // Create new programs and such for the new context.
-        mFullScreen = new FullFrameRect(FilterManager.getFilter(mCurrentFilterType, mContext));
+        mFullScreen = new FullFrameRect(FilterManager.getCameraFilter(mCurrentFilterType, mContext));
     }
 
     private void prepareEncoder(EGLContext sharedContext, int width, int height, int bitRate,
@@ -400,12 +398,12 @@ public class TextureMovieEncoder implements Runnable {
         mInputWindowSurface = new WindowSurface(mEglCore, mVideoEncoder.getInputSurface(), true);
         mInputWindowSurface.makeCurrent();
 
-        mFullScreen = new FullFrameRect(FilterManager.getFilter(mCurrentFilterType, mContext));
+        mFullScreen = new FullFrameRect(FilterManager.getCameraFilter(mCurrentFilterType, mContext));
     }
 
     private void handleUpdateFilter(FilterType filterType) {
         if (mFullScreen != null && filterType != mCurrentFilterType) {
-            mFullScreen.changeProgram(FilterManager.getFilter(filterType, mContext));
+            mFullScreen.changeProgram(FilterManager.getCameraFilter(filterType, mContext));
             mCurrentFilterType = filterType;
         }
     }

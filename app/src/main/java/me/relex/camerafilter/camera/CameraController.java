@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -159,10 +158,6 @@ public class CameraController
                 //拍照尺寸
                 cp.setPictureSize(mCameraPictureSize.width, mCameraPictureSize.height);
 
-                // Nexus5 设置一下
-                if (Build.MODEL.contains("Nexus 5")) {
-                    cp.setPreviewFpsRange(7000, 30000);
-                }
                 mCamera.setParameters(cp);
                 mCamera.setErrorCallback(this);
             }

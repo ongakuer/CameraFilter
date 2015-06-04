@@ -1,4 +1,4 @@
-package me.relex.camerafilter.gles;
+package me.relex.camerafilter.filter;
 
 import java.nio.FloatBuffer;
 

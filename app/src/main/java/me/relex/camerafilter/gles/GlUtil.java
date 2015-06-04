@@ -17,13 +17,11 @@ package me.relex.camerafilter.gles;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.opengl.GLES20;
-import android.opengl.GLES30;
 import android.opengl.GLUtils;
-import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.support.annotation.RawRes;
 import android.util.Log;
 import java.io.BufferedReader;
@@ -37,6 +35,8 @@ import java.nio.FloatBuffer;
 public class GlUtil {
     private static final String TAG = "GlUtil";
     /** Identity matrix for general use.  Don't modify or life will get weird. */
+
+    public static final int NO_TEXTURE = -1;
 
     private static final int SIZEOF_FLOAT = 4;
 
@@ -108,9 +108,10 @@ public class GlUtil {
      * @param wrapT Y方向边缘环绕
      * @return 返回创建的 Texture ID
      */
-    public static int createTexture(int textureTarget, int minFilter, int magFilter, int wrapS,
-            int wrapT) {
+    public static int createTexture(int textureTarget, @Nullable Bitmap bitmap, int minFilter,
+            int magFilter, int wrapS, int wrapT) {
         int[] textureHandle = new int[1];
+
         GLES20.glGenTextures(1, textureHandle, 0);
         GlUtil.checkGlError("glGenTextures");
         GLES20.glBindTexture(textureTarget, textureHandle[0]);
@@ -119,12 +120,22 @@ public class GlUtil {
         GLES20.glTexParameterf(textureTarget, GLES20.GL_TEXTURE_MAG_FILTER, magFilter); //线性插值
         GLES20.glTexParameteri(textureTarget, GLES20.GL_TEXTURE_WRAP_S, wrapS);
         GLES20.glTexParameteri(textureTarget, GLES20.GL_TEXTURE_WRAP_T, wrapT);
+
+        if (bitmap != null) {
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        }
+
         GlUtil.checkGlError("glTexParameter");
         return textureHandle[0];
     }
 
     public static int createTexture(int textureTarget) {
-        return createTexture(textureTarget, GLES20.GL_LINEAR, GLES20.GL_LINEAR,
+        return createTexture(textureTarget, null, GLES20.GL_LINEAR, GLES20.GL_LINEAR,
+                GLES20.GL_CLAMP_TO_EDGE, GLES20.GL_CLAMP_TO_EDGE);
+    }
+
+    public static int createTexture(int textureTarget, Bitmap bitmap) {
+        return createTexture(textureTarget, bitmap, GLES20.GL_LINEAR, GLES20.GL_LINEAR,
                 GLES20.GL_CLAMP_TO_EDGE, GLES20.GL_CLAMP_TO_EDGE);
     }
 
@@ -167,7 +178,8 @@ public class GlUtil {
 
     public static String readTextFromRawResource(final Context applicationContext,
             @RawRes final int resourceId) {
-        final InputStream inputStream = applicationContext.getResources().openRawResource(resourceId);
+        final InputStream inputStream =
+                applicationContext.getResources().openRawResource(resourceId);
         final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         String nextLine;
@@ -184,39 +196,17 @@ public class GlUtil {
         return body.toString();
     }
 
-    /**
-     * Writes GL version info to the log.
-     */
-    public static void logVersionInfo() {
-        Log.i(TAG, "vendor  : " + GLES20.glGetString(GLES20.GL_VENDOR));
-        Log.i(TAG, "renderer: " + GLES20.glGetString(GLES20.GL_RENDERER));
-        Log.i(TAG, "version : " + GLES20.glGetString(GLES20.GL_VERSION));
-
-        if (false) {
-            int[] values = new int[1];
-            GLES30.glGetIntegerv(GLES30.GL_MAJOR_VERSION, values, 0);
-            int majorVersion = values[0];
-            GLES30.glGetIntegerv(GLES30.GL_MINOR_VERSION, values, 0);
-            int minorVersion = values[0];
-            if (GLES30.glGetError() == GLES30.GL_NO_ERROR) {
-                Log.i(TAG, "iversion: " + majorVersion + "." + minorVersion);
-            }
-        }
-    }
-
     public static int createTextureWithTextContent(String text) {
         // Create an empty, mutable bitmap
         Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
         // get a canvas to paint over the bitmap
         Canvas canvas = new Canvas(bitmap);
         canvas.drawARGB(0, 0, 255, 0);
-
         // get a background image from resources
         // note the image format must match the bitmap format
         //        Drawable background = context.getResources().getDrawable(R.drawable.background);
         //        background.setBounds(0, 0, 256, 256);
         //        background.draw(canvas); // draw the background to our bitmap
-
         // Draw the text
         Paint textPaint = new Paint();
         textPaint.setTextSize(32);
@@ -253,38 +243,5 @@ public class GlUtil {
         bitmap.recycle();
 
         return textures[0];
-    }
-
-    public static int createTextureFromImage(Context context, @DrawableRes int resId) {
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;    // No pre-scaling
-        // Read in the resource
-
-        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resId, options);
-
-        final int[] textureHandle = new int[1];
-        ////Generate one texture pointer...
-        GLES20.glGenTextures(1, textureHandle, 0);
-        // Bind to the texture in OpenGL
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
-        GlUtil.checkGlError("glBindTexture " + textureHandle[0]);
-        // Set filtering
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_LINEAR);
-        ////Different possible texture parameters, e.g. GLES20.GL_CLAMP_TO_EDGE
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
-                GLES20.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
-                GLES20.GL_CLAMP_TO_EDGE);
-
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-
-        if (textureHandle[0] == 0) {
-            throw new RuntimeException("Error loading texture.");
-        }
-
-        return textureHandle[0];
     }
 }

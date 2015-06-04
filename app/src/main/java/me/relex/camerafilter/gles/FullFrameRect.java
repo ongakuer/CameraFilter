@@ -32,7 +32,9 @@ package me.relex.camerafilter.gles;
  * limitations under the License.
  */
 
+import android.graphics.Bitmap;
 import android.opengl.Matrix;
+import me.relex.camerafilter.filter.IFilter;
 
 /**
  * This class essentially represents a viewport-sized sprite that will be rendered with
@@ -93,6 +95,10 @@ public class FullFrameRect {
      */
     public int createTexture() {
         return GlUtil.createTexture(mFilter.getTextureTarget());
+    }
+
+    public int createTexture(Bitmap bitmap) {
+        return GlUtil.createTexture(mFilter.getTextureTarget(), bitmap);
     }
 
     public void scaleMVPMatrix(float x, float y) {

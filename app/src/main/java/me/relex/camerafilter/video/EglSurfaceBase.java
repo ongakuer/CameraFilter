@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.relex.camerafilter.gles;
+package me.relex.camerafilter.video;
 
 import android.graphics.Bitmap;
 import android.opengl.EGL14;
@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import me.relex.camerafilter.gles.GlUtil;
 
 /**
  * Common base class for EGL surfaces.
