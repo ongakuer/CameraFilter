@@ -25,7 +25,7 @@ public class ImageFilterActivity extends AppCompatActivity implements View.OnCli
         mImageView = (ImageView) findViewById(R.id.image_view);
 
         findViewById(R.id.filter_normal).setOnClickListener(this);
-        findViewById(R.id.filter_blend).setOnClickListener(this);
+        findViewById(R.id.filter_tone_curve).setOnClickListener(this);
         findViewById(R.id.filter_soft_light).setOnClickListener(this);
 
         mImageRenderer =
@@ -37,9 +37,8 @@ public class ImageFilterActivity extends AppCompatActivity implements View.OnCli
             case R.id.filter_normal:
                 startFilterTask(FilterManager.FilterType.Normal);
                 break;
-            case R.id.filter_blend:
-                startFilterTask(FilterManager.FilterType.Blend);
-
+            case R.id.filter_tone_curve:
+                startFilterTask(FilterManager.FilterType.ToneCurve);
                 break;
             case R.id.filter_soft_light:
                 startFilterTask(FilterManager.FilterType.SoftLight);

@@ -13,7 +13,7 @@ public class CameraFilterBlend extends CameraFilter {
 
     protected int mExtraTextureId;
     protected int maExtraTextureCoordLoc;
-    protected int muExtraTextureUni;
+    protected int muExtraTextureLoc;
 
     public CameraFilterBlend(Context context, @DrawableRes int drawableId) {
         super(context);
@@ -31,18 +31,15 @@ public class CameraFilterBlend extends CameraFilter {
 
     @Override protected void getGLSLValues() {
         super.getGLSLValues();
-
         maExtraTextureCoordLoc = GLES20.glGetAttribLocation(mProgramHandle, "aExtraTextureCoord");
-        muExtraTextureUni = GLES20.glGetUniformLocation(mProgramHandle, "uExtraTexture");
+        muExtraTextureLoc = GLES20.glGetUniformLocation(mProgramHandle, "uExtraTexture");
     }
 
     @Override protected void bindTexture(int textureId) {
-
         super.bindTexture(textureId);
-
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mExtraTextureId);
-        GLES20.glUniform1i(muExtraTextureUni, 1);
+        GLES20.glUniform1i(muExtraTextureLoc, 1);
     }
 
     @Override
@@ -50,7 +47,6 @@ public class CameraFilterBlend extends CameraFilter {
             int vertexStride, float[] texMatrix, FloatBuffer texBuffer, int texStride) {
         super.bindGLSLValues(mvpMatrix, vertexBuffer, coordsPerVertex, vertexStride, texMatrix,
                 texBuffer, texStride);
-
         GLES20.glEnableVertexAttribArray(maExtraTextureCoordLoc);
         GLES20.glVertexAttribPointer(maExtraTextureCoordLoc, 2, GLES20.GL_FLOAT, false, texStride,
                 texBuffer);

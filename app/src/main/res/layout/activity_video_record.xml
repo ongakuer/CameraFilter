@@ -23,12 +23,20 @@
             android:text="@string/filter_normal"
             android:gravity="center"/>
 
+        <!--<android.support.v7.widget.AppCompatButton-->
+        <!--android:id="@+id/filter_blend"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_weight="1"-->
+        <!--android:layout_height="48dp"-->
+        <!--android:text="@string/filter_blend"-->
+        <!--android:gravity="center"/>-->
+
         <android.support.v7.widget.AppCompatButton
-            android:id="@+id/filter_blend"
+            android:id="@+id/filter_tone_curve"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="48dp"
-            android:text="@string/filter_blend"
+            android:text="@string/filter_tone_curve"
             android:gravity="center"/>
 
         <android.support.v7.widget.AppCompatButton

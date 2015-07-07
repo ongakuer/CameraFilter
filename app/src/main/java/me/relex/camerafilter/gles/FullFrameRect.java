@@ -41,7 +41,7 @@ import me.relex.camerafilter.filter.IFilter;
  * a texture, usually from an external source like the camera or video decoder.
  */
 public class FullFrameRect {
-    private final Drawable2d mRectDrawable = new Drawable2d(Drawable2d.Prefab.FULL_RECTANGLE);
+    private final Drawable2d mRectDrawable = new Drawable2d();
     private IFilter mFilter;
     public final float[] IDENTITY_MATRIX = new float[16];
 

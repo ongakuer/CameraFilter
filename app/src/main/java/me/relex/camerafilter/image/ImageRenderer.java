@@ -21,6 +21,8 @@ public class ImageRenderer implements GLSurfaceView.Renderer {
     private final float[] mSTMatrix = new float[16];
 
     private int mSurfaceWidth, mSurfaceHeight;
+    private int mIncomingWidth, mIncomingHeight;
+
     private FullFrameRect mFullScreen;
 
     public ImageRenderer(Context context, FilterManager.FilterType filterType) {
@@ -45,10 +47,11 @@ public class ImageRenderer implements GLSurfaceView.Renderer {
         if (bitmap == null) {
             return;
         }
-        int bmpWidth = bitmap.getWidth();
-        int bmpHeight = bitmap.getHeight();
 
-        float scaleHeight = mSurfaceWidth / (bmpWidth * 1f / bmpHeight * 1f);
+        mIncomingWidth = bitmap.getWidth();
+        mIncomingHeight = bitmap.getHeight();
+
+        float scaleHeight = mSurfaceWidth / (mIncomingWidth * 1f / mIncomingHeight * 1f);
         float surfaceHeight = mSurfaceHeight;
 
         mTextureId = mFullScreen.createTexture(bitmap);
@@ -72,6 +75,9 @@ public class ImageRenderer implements GLSurfaceView.Renderer {
             mFullScreen.changeProgram(FilterManager.getImageFilter(mNewFilterType, mContext));
             mCurrentFilterType = mNewFilterType;
         }
+
+        mFullScreen.getFilter().setTextureSize(mIncomingWidth, mIncomingHeight);
+
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
     }
 

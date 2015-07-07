@@ -9,7 +9,9 @@
 
     <string name="filter_normal">普通</string>
     <string name="filter_blend">叠加</string>
-    <string name="filter_soft_light">柔和</string>
+    <string name="filter_soft_light">柔和叠加</string>
+    <string name="filter_stack_blur">模糊</string>
+    <string name="filter_tone_curve">色调曲线</string>
 
 
 </resources>

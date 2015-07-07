@@ -24,7 +24,7 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
         mCameraSurfaceView.setAspectRatio(3, 4);
 
         findViewById(R.id.filter_normal).setOnClickListener(this);
-        findViewById(R.id.filter_blend).setOnClickListener(this);
+        findViewById(R.id.filter_tone_curve).setOnClickListener(this);
         findViewById(R.id.filter_soft_light).setOnClickListener(this);
 
         mRecordButton = (Button) findViewById(R.id.record);
@@ -55,8 +55,8 @@ public class VideoRecordActivity extends AppCompatActivity implements View.OnCli
             case R.id.filter_normal:
                 mCameraSurfaceView.changeFilter(FilterType.Normal);
                 break;
-            case R.id.filter_blend:
-                mCameraSurfaceView.changeFilter(FilterType.Blend);
+            case R.id.filter_tone_curve:
+                mCameraSurfaceView.changeFilter(FilterType.ToneCurve);
                 break;
             case R.id.filter_soft_light:
                 mCameraSurfaceView.changeFilter(FilterType.SoftLight);

@@ -28,7 +28,6 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
     private SurfaceTexture mSurfaceTexture;
     private final float[] mSTMatrix = new float[16];
 
-    private int mSurfaceWidth, mSurfaceHeight;
     private FilterType mCurrentFilterType;
     private FilterType mNewFilterType;
     private TextureMovieEncoder mVideoEncoder;
@@ -37,8 +36,9 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
     private int mRecordingStatus;
     private EncoderConfig mEncoderConfig;
 
-    private float mMvpScaleX = 1f;
-    private float mMvpScaleY = 1f;
+    private float mMvpScaleX = 1f, mMvpScaleY = 1f;
+    private int mSurfaceWidth, mSurfaceHeight;
+    private int mIncomingWidth, mIncomingHeight;
 
     public CameraRecordRenderer(Context applicationContext,
             CameraSurfaceView.CameraHandler cameraHandler) {
@@ -57,6 +57,9 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
     }
 
     public void setCameraPreviewSize(int width, int height) {
+        mIncomingWidth = width;
+        mIncomingHeight = height;
+
         float scaleHeight = mSurfaceWidth / (width * 1f / height * 1f);
         float surfaceHeight = mSurfaceHeight;
 
@@ -85,9 +88,11 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
     @Override public void onSurfaceChanged(GL10 gl, int width, int height) {
         mSurfaceWidth = width;
         mSurfaceHeight = height;
+
         if (gl != null) {
             gl.glViewport(0, 0, width, height);
         }
+
         mCameraHandler.sendMessage(
                 mCameraHandler.obtainMessage(CameraSurfaceView.CameraHandler.SETUP_CAMERA, width,
                         height, mSurfaceTexture));
@@ -95,12 +100,12 @@ public class CameraRecordRenderer implements GLSurfaceView.Renderer {
 
     @Override public void onDrawFrame(GL10 gl) {
         mSurfaceTexture.updateTexImage();
-
         if (mNewFilterType != mCurrentFilterType) {
             mFullScreen.changeProgram(
                     FilterManager.getCameraFilter(mNewFilterType, mApplicationContext));
             mCurrentFilterType = mNewFilterType;
         }
+        mFullScreen.getFilter().setTextureSize(mIncomingWidth, mIncomingHeight);
         mSurfaceTexture.getTransformMatrix(mSTMatrix);
         mFullScreen.drawFrame(mTextureId, mSTMatrix);
 
